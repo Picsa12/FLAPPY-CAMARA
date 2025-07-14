@@ -217,8 +217,7 @@ canvas.height = window.innerHeight;
 
 const bgCanvas = document.createElement('canvas');
 const isMobile = window.innerWidth <= 768;
-// Cache de gradientes para evitar recrearlos
-const gradientCache = {};
+
 const gravity = isMobile ? 0.22 : 0.5;
 const jump = isMobile ? -5.5 : -8;
 
