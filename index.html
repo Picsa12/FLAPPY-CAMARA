@@ -123,8 +123,12 @@
     <option value="👾">👾 Alien</option>
     <option value="🧙‍♂️">🧙‍♂️ Mago</option>
     <option value="🪽">🪽 Angel</option>
+    <option value="💸">💸 Billete</option>
+    <option value="😝">😝 Carita</option>
     <option value="⚽">⚽ Soccer</option>
   </select><br/>
+    <label for="playerNameInput">Ingresa tu nombre:</label><br/>
+    <input id="playerNameInput" type="text" placeholder="Jugador" style="font-size: 20px; padding: 8px 12px; border-radius: 10px; border: none; margin: 10px 0;"><br/>
   <button id="startGame">Iniciar Juego</button>
 </div>
 <div id="subtituloMenu">Desarrollo Estratégico</div>
@@ -210,14 +214,17 @@ muteToggle.addEventListener("click", () => {
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
+
 const bgCanvas = document.createElement('canvas');
 const isMobile = window.innerWidth <= 768;
+// Cache de gradientes para evitar recrearlos
+const gradientCache = {};
 const gravity = isMobile ? 0.22 : 0.5;
 const jump = isMobile ? -5.5 : -8;
 
 let lastBackgroundUpdate = 0;
 const backgroundFPS = 10; // Solo se actualiza el fondo a 10 FPS
-  
+
 let bgNeedRedraw = true;
 let pipeGap = 150;
 let pipeSpacing = 300; // distancia horizontal entre tubos
@@ -235,6 +242,8 @@ let animationType = 0;
 let gameStarted = false;
 let playerEmoji = "🦇";
 let sampleQuestion = { question: "", answer: "" };
+let playerName = "Jugador";
+let gameLoopId = null; // identificador del ciclo de animación
 
 // Variables para el fondo animado
 let backgroundOffset = 0;
@@ -507,6 +516,17 @@ function drawClouds() {
   });
 }
 
+// Solo procesar objetos visibles
+function isVisible(obj) {
+  return obj.x + obj.width > 0 && obj.x < canvas.width;
+}
+
+// Reutilizar objetos en lugar de crear nuevos
+const particlePool = [];
+function getParticle() {
+  return particlePool.pop() || createNewParticle();
+}
+
 function flap() {
   if (!gameStarted || gameEnded) return;
 
@@ -609,13 +629,13 @@ function updatePipes() {
     pipes.push({ x: canvas.width, y: Math.floor(Math.random() * (canvas.height - pipeGap - 100)) + 50, counted: false });
   }
   if (pipes[0].x + pipeWidth < 0) {
-    pipes.shift();
+    pipes.shift(); //Esto elimina los tubos fuera de pantalla
   }
 }
 
 function addParticles() {
   const colors = ["#ff4444", "#44ff44", "#4444ff", "#ffff44", "#ff44ff", "#44ffff"];
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 4; i++) {
     const color = colors[Math.floor(Math.random() * colors.length)];
     particles.push({
       x: player.x + player.hitbox / 2,
@@ -639,7 +659,7 @@ function updateParticles() {
 
   particles.forEach(p => {
     ctx.fillStyle = p.color;
-    if (level === 3 || level === 5) {
+    if (level === 3 || level === 4) {
       ctx.font = `${p.size * 3}px Arial`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
@@ -759,14 +779,20 @@ function continueGameWithCountdown() {
       // Reanudar el juego
       gameEnded = false;
       if (!muted) bgMusic.play();
-      gameLoop();
+      // ✅ Cancelar cualquier loop anterior
+      if (gameLoopId) {
+        cancelAnimationFrame(gameLoopId);
+        gameLoopId = null;
+      }
+        // ✅ Iniciar nueva animación limpia
+        gameLoop();
     }
-  }, 1000);
+  },1000);
 }
 function showGameOver() {
-  document.getElementById("finalScore").textContent = "Puntaje final: " + score;
-  document.getElementById("finalLevel").textContent = "Nivel alcanzado: " + levelNames[getLevel(score) - 1];
-  document.getElementById("gameOverScreen").style.display = "block";
+    document.getElementById("finalScore").textContent = playerName + " - Puntaje final: " + score;
+    document.getElementById("finalLevel").textContent = "Nivel alcanzado: " + levelNames[getLevel(score) - 1];
+    document.getElementById("gameOverScreen").style.display = "block";
 }
 
 // Permitir responder con Enter
@@ -784,6 +810,10 @@ function drawScore() {
   ctx.textAlign = "left";
   ctx.strokeText("Puntuación: " + score, 30, 60);
   ctx.fillText("Puntuación: " + score, 30, 60);
+  ctx.font = "20px sans-serif";
+  ctx.strokeText("Jugador: " + playerName, 30, 120);
+  ctx.fillText("Jugador: " + playerName, 30, 120);
+
 }
 
 function drawLevel() {
@@ -824,11 +854,14 @@ function gameLoop() {
   drawScore();
   drawLevel();
 
-  requestAnimationFrame(gameLoop);
+  // Guardamos el ID de animación
+  gameLoopId = requestAnimationFrame(gameLoop);
 }
 
 startBtn.addEventListener("click", () => {
   playerEmoji = document.getElementById("emojiSelect").value;
+  const nameInput = document.getElementById("playerNameInput").value.trim();
+  playerName = nameInput !== "" ? nameInput : "Jugador";
   menu.style.display = "none";
   document.getElementById("logoFondo").style.display = "none";
   document.getElementById("subtituloMenu").style.display = "none";
@@ -852,6 +885,11 @@ startBtn.addEventListener("click", () => {
       pipes.push({ x: canvas.width, y: Math.floor(Math.random() * (canvas.height - pipeGap - 100)) + 50, counted: false });
       gameStarted = true;
       if (!muted) bgMusic.play();
+      if (gameLoopId) {
+        cancelAnimationFrame(gameLoopId);
+        gameLoopId = null;
+    }
+      // ✅ Iniciar nueva animación limpia
       gameLoop();
     }
   }, 1000);
