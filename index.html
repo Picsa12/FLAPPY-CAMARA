@@ -215,6 +215,9 @@ const isMobile = window.innerWidth <= 768;
 const gravity = isMobile ? 0.22 : 0.5;
 const jump = isMobile ? -5.5 : -8;
 
+let lastBackgroundUpdate = 0;
+const backgroundFPS = 10; // Solo se actualiza el fondo a 10 FPS
+  
 let bgNeedRedraw = true;
 let pipeGap = 150;
 let pipeSpacing = 300; // distancia horizontal entre tubos
