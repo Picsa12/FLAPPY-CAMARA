@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>🕹️ Flappy Cámara</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+      background: linear-gradient(to bottom, #ffffff, #f9f5ed, #f1e8d8);
+      font-family: sans-serif;
+      touch-action: none;
+    }
+    canvas {
+      display: block;
+      margin: 0;
+      padding: 0;
+      box-shadow: 0 0 20px #000;
+    }
+    #menu, #gameOverScreen {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.8);
+      border-radius: 20px;
+      padding: 40px 60px;
+      text-align: center;
+      box-shadow: 0 0 30px #000;
+      color: white;
+      z-index: 20;
+    }
+    #menu h1 {
+      margin: 0 0 20px;
+      font-size: 36px;
+    }
+    #startGame {
+      padding: 10px 30px;
+      font-size: 20px;
+      border: none;
+      border-radius: 12px;
+      background: #ffcc00;
+      color: #000;
+      cursor: pointer;
+      box-shadow: 0 0 10px #ff0;
+      transition: 0.3s;
+    }
+    #startGame:hover {
+      background: #ffdd33;
+    }
+    #logoFondo {
+      position: absolute;
+      top: 75px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 400px;
+      opacity: 1;
+      z-index: 100;
+      pointer-events: none;
+      filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.5));
+    }
+    #subtituloMenu {
+      position: absolute;
+      top: calc(50% + 200px);
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 24px;
+      color: black;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.6);
+      z-index: 21;
+      font-weight: 600;
+    }
+    #videoFondo {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      object-fit: cover;
+      z-index: 0;
+      pointer-events: none;
+      filter: brightness(0.9) blur(3px);
+      opacity: 0.4;
+    }
+
+#questionCard {
+  z-index: 100; /* Asegurar que esté por encima del canvas */
+  animation: fadeInCard 0.5s ease-out forwards;
+  opacity: 0;
+  transform: scale(0.8) translate(-50%, -50%);
+}
+
+@keyframes fadeInCard {
+  to {
+    opacity: 1;
+    transform: scale(1) translate(-50%, -50%);
+  }
+}
+
+  </style>
+</head>
+<body>
+<video id="videoFondo" autoplay muted loop playsinline>
+  <source src="video-fondo1.mp4" type="video/mp4" />
+  Tu navegador no soporta video HTML5.
+</video>
+
+<img src="logo-camara.png" id="logoFondo" alt="Logo" />
+<div id="countdown" style="display:none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 80px; color: yellow; z-index: 25; font-family: sans-serif; text-shadow: 3px 3px 5px black;">
+  3
+</div>
+<div id="menu">
+  <h1> 🕹️ Flappy Cámara</h1>
+  <label for="emojiSelect">Selecciona tu skin:</label><br/>
+  <select id="emojiSelect" style="font-size: 20px; margin: 10px 0;">
+    <option value="🦇">🦇 Batman</option>
+    <option value="🐦">🐦 Pajarito</option>
+    <option value="🐲">🐲 Dragón</option>
+    <option value="👾">👾 Alien</option>
+    <option value="🧙‍♂️">🧙‍♂️ Mago</option>
+    <option value="🪽">🪽 Angel</option>
+    <option value="⚽">⚽ Soccer</option>
+  </select><br/>
+  <button id="startGame">Iniciar Juego</button>
+</div>
+<div id="subtituloMenu">Desarrollo Estratégico</div>
+<div id="questionCard" style="display:none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border-radius: 25px; padding: 50px 40px; text-align: center; color: #333; z-index: 30; max-width: 600px; min-width: 500px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 10px 20px rgba(0, 0, 0, 0.2); border: 3px solid #f0f0f0;">
+  <h3 style="font-size: 28px; margin: 0 0 25px 0; color: #2c3e50;">🤔 Pregunta de Rescate</h3>
+  <p id="questionText" style="font-size: 22px; margin: 20px 0; color: #34495e; font-weight: 500; line-height: 1.4;"></p>
+  <input type="text" id="answerInput" placeholder="Escribe tu respuesta..." style="width: 90%; padding: 15px; margin: 20px 0; border: 2px solid #ddd; border-radius: 12px; font-size: 18px; box-shadow: inset 0 2px 5px rgba(0,0,0,0.1); transition: border-color 0.3s;">
+  <div style="margin-top: 30px;">
+    <button onclick="checkAnswer()" style="padding: 15px 30px; margin: 10px; background: #4CAF50; color: white; border: none; border-radius: 12px; cursor: pointer; font-size: 18px; font-weight: bold; box-shadow: 0 4px 10px rgba(76, 175, 80, 0.3); transition: all 0.3s;">Responder</button>
+    <button onclick="skipQuestion()" style="padding: 15px 30px; margin: 10px; background: #f44336; color: white; border: none; border-radius: 12px; cursor: pointer; font-size: 18px; font-weight: bold; box-shadow: 0 4px 10px rgba(244, 67, 54, 0.3); transition: all 0.3s;">Saltar</button>
+  </div>
+</div>
+<div id="gameOverScreen" style="display:none;">
+  <h2>🪦 Juego Terminado</h2>
+  <p id="finalScore"></p>
+  <p id="finalLevel"></p>
+  <button onclick="location.reload()" style="margin-top: 20px; padding: 10px 20px; font-size: 16px; background: #ffcc00; border: none; border-radius: 10px; cursor: pointer;">Reintentar</button>
+</div>
+
+<!-- Botón de mute -->
+<button id="muteToggle" style="position: absolute; top: 20px; right: 20px; z-index: 30; padding: 10px; background: rgba(0,0,0,0.7); color: #fff; border: none; border-radius: 8px; cursor: pointer; font-size: 16px;">🔊</button>
+
+<!-- Audios -->
+<audio id="bgMusic" src="musica-fondo.mp3" loop></audio>
+<audio id="flapSound" src="salto.mp3"></audio>
+<audio id="scoreSound" src="punto.mp3"></audio>
+<audio id="hitSound" src="game-over.mp3"></audio>
+
+<canvas id="game"></canvas>
+<script>
+const questionBank = [
+  { question: "¿Cuál es la capital de Colombia?", answer: "bogotá" },
+  { question: "¿Cuánto es 5 + 7?", answer: "12" },
+  { question: "¿Cuál es el océano más grande?", answer: "pacífico" },
+  { question: "¿Qué planeta es conocido como el planeta rojo?", answer: "marte" },
+  { question: "¿En qué continente está Egipto?", answer: "áfrica" },
+  { question: "¿Cuántos días tiene un año bisiesto?", answer: "366" },
+  { question: "¿Cuál es el animal más grande del mundo?", answer: "ballena azul" },
+  { question: "¿Cuántas patas tiene una araña?", answer: "8" },
+  { question: "¿Cuál es el metal más preciado?", answer: "oro" },
+  { question: "¿Cuántas estaciones tiene el año?", answer: "4" },
+  { question: "¿Cuál es el río más largo del mundo?", answer: "nilo" },
+  { question: "¿Cuántos lados tiene un hexágono?", answer: "6" },
+  { question: "¿Cuál es la moneda de Estados Unidos?", answer: "dólar" },
+  { question: "¿Cuántas horas tiene un día?", answer: "24" },
+  { question: "¿Cuál es el idioma más hablado en el mundo?", answer: "chino" },
+  { question: "¿Cuál de los siguientes es un dato personal sensible? A) Tu número de teléfono B) Tu nombre completo C) Tu orientación sexual D) Tu correo electrónico", answer: "c"}
+];
+
+let remainingQuestions = shuffle([...questionBank]);
+
+function shuffle(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+const menu = document.getElementById("menu");
+const startBtn = document.getElementById("startGame");
+
+const bgMusic = document.getElementById("bgMusic");
+const flapSound = document.getElementById("flapSound");
+const scoreSound = document.getElementById("scoreSound");
+const hitSound = document.getElementById("hitSound");
+flapSound.volume = 0.1;
+const muteToggle = document.getElementById("muteToggle");
+let muted = false;
+
+muteToggle.addEventListener("click", () => {
+  muted = !muted;
+  muteToggle.textContent = muted ? "🔇" : "🔊";
+  if (muted) {
+    bgMusic.pause();
+  } else {
+    bgMusic.play();
+  }
+});
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+const bgCanvas = document.createElement('canvas');
+const isMobile = window.innerWidth <= 768;
+const gravity = isMobile ? 0.22 : 0.5;
+const jump = isMobile ? -5.5 : -8;
+
+let bgNeedRedraw = true;
+let pipeGap = 150;
+let pipeSpacing = 300; // distancia horizontal entre tubos
+const pipeWidth = 60;
+let score = 0;
+let lastSpeedIncrease = 0;
+let lastAnimationChange = 0;
+let level = 1;
+let gameEnded = false;
+let rotation = 0;
+let rotating = false;
+let particles = [];
+let pipeSpeed = isMobile ? 1.5 : 2;
+let animationType = 0;
+let gameStarted = false;
+let playerEmoji = "🦇";
+let sampleQuestion = { question: "", answer: "" };
+
+// Variables para el fondo animado
+let backgroundOffset = 0;
+let cloudOffset = 0;
+let timeOfDay = 0;
+let clouds = [];
+let currentClimate = 'day'; // 'day' o 'night'
+let transitionProgress = 0;
+let sunPosition = { x: 0, y: 0 };
+let moonPosition = { x: 0, y: 0 };
+let lastClimateChange = 0; // Para controlar el cambio de clima
+
+const levelNames = ["🌱 Fácil", "⭐ Medio", "🔥 Difícil", "🚀 Extremo", "👽 Imposible"];
+
+function getLevel(score) {
+  if (score >= 80) return 5;
+  if (score >= 60) return 4;
+  if (score >= 40) return 3;
+  if (score >= 20) return 2;
+  return 1;
+}
+
+function updateLevelProgress() {
+  if (score - lastSpeedIncrease >= 10) {
+    pipeSpeed += isMobile ? 0.2 : 0.3;
+    lastSpeedIncrease = score;
+  }
+  if (score - lastAnimationChange >= 20) {
+    animationType = (animationType + 1) % 5;
+    lastAnimationChange = score;
+  }
+  level = getLevel(score);
+  pipeSpacing = 300 + (level - 1) * 40;
+}
+
+let player = {
+  x: 80,
+  y: canvas.height / 2,
+  size: 40,
+  hitbox: 26,
+  velocity: 0
+};
+
+let pipes = [];
+
+// Inicializar nubes
+function initClouds() {
+  clouds = [];
+  for (let i = 0; i < 8; i++) {
+    clouds.push({
+      x: Math.random() * (canvas.width + 400),
+      y: Math.random() * (canvas.height * 0.4) + 50,
+      size: Math.random() * 60 + 40,
+      speed: Math.random() * 0.5 + 0.2,
+      opacity: Math.random() * 0.4 + 0.3
+    });
+  }
+}
+
+// Función para determinar el clima objetivo basado en la puntuación
+function getTargetClimate(score) {
+  // Cada 30 puntos cambia el clima
+  const cyclePosition = Math.floor(score / 30);
+  // Si el ciclo es par, es día; si es impar, es noche
+  return cyclePosition % 2 === 0 ? 'day' : 'night';
+}
+
+// Dibujar fondo animado con día/noche
+function drawAnimatedBackground() {
+  // Determinar el clima objetivo basado en la puntuación
+  const targetClimate = getTargetClimate(score);
+  
+  // Manejar transición entre climas
+  if (targetClimate !== currentClimate) {
+    transitionProgress += 0.02; // Velocidad de transición
+    if (transitionProgress >= 1) {
+      currentClimate = targetClimate;
+      transitionProgress = 0;
+    }
+  } else {
+    // Si no hay transición, asegurar que transitionProgress sea 0
+    transitionProgress = 0;
+  }
+  
+  // Colores del día y la noche
+  const dayColors = {
+    top: { r: 255, g: 197, b: 161 },    // #FFC5A1
+    bottom: { r: 249, g: 243, b: 223 }   // #F9F3DF
+  };
+  
+  const nightColors = {
+    top: { r: 42, g: 82, b: 138 },      // #2A528A
+    bottom: { r: 107, g: 122, b: 161 }   // #6B7AA1
+  };
+  
+  // Interpolar colores durante la transición
+  let topColor, bottomColor;
+  if (transitionProgress === 0) {
+    // Sin transición, usar colores puros
+    if (currentClimate === 'day') {
+      topColor = dayColors.top;
+      bottomColor = dayColors.bottom;
+    } else {
+      topColor = nightColors.top;
+      bottomColor = nightColors.bottom;
+    }
+  } else {
+    // En transición, mezclar colores
+    const fromColors = currentClimate === 'day' ? dayColors : nightColors;
+    const toColors = currentClimate === 'day' ? nightColors : dayColors;
+    
+    topColor = {
+      r: Math.floor(fromColors.top.r + (toColors.top.r - fromColors.top.r) * transitionProgress),
+      g: Math.floor(fromColors.top.g + (toColors.top.g - fromColors.top.g) * transitionProgress),
+      b: Math.floor(fromColors.top.b + (toColors.top.b - fromColors.top.b) * transitionProgress)
+    };
+    
+    bottomColor = {
+      r: Math.floor(fromColors.bottom.r + (toColors.bottom.r - fromColors.bottom.r) * transitionProgress),
+      g: Math.floor(fromColors.bottom.g + (toColors.bottom.g - fromColors.bottom.g) * transitionProgress),
+      b: Math.floor(fromColors.bottom.b + (toColors.bottom.b - fromColors.bottom.b) * transitionProgress)
+    };
+  }
+  
+  // Crear gradiente del cielo
+  const skyGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  skyGradient.addColorStop(0, `rgb(${topColor.r}, ${topColor.g}, ${topColor.b})`);
+  skyGradient.addColorStop(1, `rgb(${bottomColor.r}, ${bottomColor.g}, ${bottomColor.b})`);
+  
+  ctx.fillStyle = skyGradient;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  
+  // Incrementar tiempo para animaciones
+  timeOfDay += 0.01;
+  
+  // Posiciones del sol y la luna
+  const baseX = canvas.width * 0.8;
+  const baseY = canvas.height * 0.25;
+  const oscillation = Math.sin(timeOfDay) * 15;
+  
+  // Dibujar sol o luna según el clima y la transición
+  if (currentClimate === 'day') {
+    if (transitionProgress === 0) {
+      drawSun(baseX, baseY + oscillation, 1);
+    } else {
+      // Transición de día a noche
+      drawSun(baseX, baseY + oscillation, 1 - transitionProgress);
+      drawMoon(baseX, baseY + oscillation, transitionProgress);
+    }
+  } else {
+    if (transitionProgress === 0) {
+      drawMoon(baseX, baseY + oscillation, 1);
+    } else {
+      // Transición de noche a día
+      drawMoon(baseX, baseY + oscillation, 1 - transitionProgress);
+      drawSun(baseX, baseY + oscillation, transitionProgress);
+    }
+  }
+}
+
+// Dibujar el sol
+function drawSun(x, y, opacity) {
+  const sunSize = 80 + Math.sin(timeOfDay * 3) * 10;
+  
+  // Resplandor del sol
+  const sunGradient = ctx.createRadialGradient(x, y, 0, x, y, sunSize);
+  sunGradient.addColorStop(0, `rgba(255, 255, 150, ${0.8 * opacity})`);
+  sunGradient.addColorStop(0.3, `rgba(255, 200, 100, ${0.6 * opacity})`);
+  sunGradient.addColorStop(0.7, `rgba(255, 150, 50, ${0.3 * opacity})`);
+  sunGradient.addColorStop(1, 'rgba(255, 100, 0, 0)');
+  
+  ctx.fillStyle = sunGradient;
+  ctx.fillRect(x - sunSize, y - sunSize, sunSize * 2, sunSize * 2);
+  
+  // El sol en sí
+  ctx.fillStyle = `rgba(255, 255, 200, ${0.9 * opacity})`;
+  ctx.beginPath();
+  ctx.arc(x, y, 35, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+// Dibujar la luna
+function drawMoon(x, y, opacity) {
+  const moonSize = 35;
+  
+  // Resplandor de la luna
+  const moonGradient = ctx.createRadialGradient(x, y, 0, x, y, moonSize + 20);
+  moonGradient.addColorStop(0, `rgba(220, 220, 255, ${0.4 * opacity})`);
+  moonGradient.addColorStop(0.5, `rgba(200, 200, 255, ${0.2 * opacity})`);
+  moonGradient.addColorStop(1, 'rgba(180, 180, 255, 0)');
+  
+  ctx.fillStyle = moonGradient;
+  ctx.fillRect(x - moonSize - 20, y - moonSize - 20, (moonSize + 20) * 2, (moonSize + 20) * 2);
+  
+  // La luna
+  ctx.fillStyle = `rgba(240, 240, 255, ${0.9 * opacity})`;
+  ctx.beginPath();
+  ctx.arc(x, y, moonSize, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Cráteres de la luna
+  ctx.fillStyle = `rgba(200, 200, 230, ${0.3 * opacity})`;
+  ctx.beginPath();
+  ctx.arc(x - 10, y - 8, 6, 0, Math.PI * 2);
+  ctx.fill();
+  
+  ctx.beginPath();
+  ctx.arc(x + 8, y + 5, 4, 0, Math.PI * 2);
+  ctx.fill();
+  
+  ctx.beginPath();
+  ctx.arc(x - 5, y + 12, 3, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+// Dibujar nubes animadas
+function drawClouds() {
+  clouds.forEach(cloud => {
+    // Mover nube
+    cloud.x -= cloud.speed;
+    
+    // Resetear nube cuando sale de la pantalla
+    if (cloud.x < -cloud.size * 2) {
+      cloud.x = canvas.width + cloud.size;
+      cloud.y = Math.random() * (canvas.height * 0.4) + 50;
+    }
+    
+    // Ajustar opacidad y color de las nubes según el clima
+    let cloudOpacity = cloud.opacity;
+    let cloudColor = '255, 255, 255'; // Blanco por defecto
+    
+    if (currentClimate === 'night') {
+      cloudOpacity *= 0.7; // Más tenues en la noche
+      cloudColor = '200, 200, 220'; // Ligeramente azuladas
+    }
+    
+    // Si estamos en transición, interpolar opacidad y color
+    if (transitionProgress > 0) {
+      if (currentClimate === 'day') {
+        // Transición de día a noche
+        cloudOpacity *= (1 - transitionProgress * 0.3);
+        const blueShift = Math.floor(transitionProgress * 35);
+        cloudColor = `${255 - blueShift}, ${255 - blueShift}, 255`;
+      } else {
+        // Transición de noche a día
+        cloudOpacity *= (0.7 + transitionProgress * 0.3);
+        const blueShift = Math.floor((1 - transitionProgress) * 35);
+        cloudColor = `${255 - blueShift}, ${255 - blueShift}, 255`;
+      }
+    }
+    
+    // Dibujar nube con efecto suave
+    ctx.fillStyle = `rgba(${cloudColor}, ${cloudOpacity})`;
+    ctx.beginPath();
+    
+    // Nube formada por varios círculos
+    const cloudParts = [
+      { x: 0, y: 0, size: cloud.size * 0.6 },
+      { x: cloud.size * 0.4, y: cloud.size * 0.1, size: cloud.size * 0.5 },
+      { x: cloud.size * 0.8, y: 0, size: cloud.size * 0.7 },
+      { x: cloud.size * 0.2, y: -cloud.size * 0.2, size: cloud.size * 0.4 },
+      { x: cloud.size * 0.6, y: -cloud.size * 0.3, size: cloud.size * 0.5 }
+    ];
+    
+    cloudParts.forEach(part => {
+      ctx.beginPath();
+      ctx.arc(cloud.x + part.x, cloud.y + part.y, part.size, 0, Math.PI * 2);
+      ctx.fill();
+    });
+  });
+}
+
+function flap() {
+  if (!gameStarted || gameEnded) return;
+
+  if (!muted) {
+    flapSound.currentTime = 0;
+    flapSound.play();
+  }
+
+  player.velocity = jump;
+}
+
+document.addEventListener("keydown", flap);
+document.addEventListener("touchstart", flap);
+
+function drawPlayer() {
+  ctx.save();
+  ctx.translate(player.x + player.hitbox / 2, player.y + player.hitbox / 2);
+  ctx.rotate((rotation * Math.PI) / 180);
+  
+  // Sombra más suave y atractiva
+  ctx.shadowColor = "rgba(0, 0, 0, 0.3)";
+  ctx.shadowBlur = 12;
+  ctx.shadowOffsetX = 2;
+  ctx.shadowOffsetY = 4;
+  
+  // Configurar fuente con mejor renderizado
+  ctx.font = player.size + "px Arial";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  
+  // Resetear sombra para el emoji
+  ctx.shadowColor = "rgba(0, 0, 0, 0.15)";
+  ctx.shadowBlur = 4;
+  ctx.shadowOffsetX = 1;
+  ctx.shadowOffsetY = 2;
+  
+  // Dibujar emoji sin contorno negro
+  ctx.fillStyle = "black"; // Permitir que el emoji mantenga sus colores originales
+  ctx.fillText(playerEmoji, 0, 0);
+  
+  ctx.restore();
+
+  if (rotating) {
+    rotation += 15;
+    if (rotation >= 360) {
+      rotation = 0;
+      rotating = false;
+    }
+  }
+}
+
+function drawPipes() {
+  pipes.forEach(pipe => {
+    const gradientTop = ctx.createLinearGradient(pipe.x, 0, pipe.x + pipeWidth, 0);
+    gradientTop.addColorStop(0, "#4CAF50");
+    gradientTop.addColorStop(1, "#81C784");
+
+    const gradientBottom = ctx.createLinearGradient(pipe.x, 0, pipe.x + pipeWidth, 0);
+    gradientBottom.addColorStop(0, "#388E3C");
+    gradientBottom.addColorStop(1, "#66BB6A");
+
+    ctx.fillStyle = gradientTop;
+    ctx.shadowColor = "#000";
+    ctx.shadowBlur = 10;
+    ctx.fillRect(pipe.x, 0, pipeWidth, pipe.y);
+
+    ctx.fillStyle = gradientBottom;
+    ctx.fillRect(pipe.x, pipe.y + pipeGap, pipeWidth, canvas.height);
+
+    ctx.shadowBlur = 0;
+  });
+}
+
+function updatePipes() {
+  pipes.forEach(pipe => {
+    pipe.x -= pipeSpeed;
+    const anticipacion = pipeSpeed * 20;
+    if (!pipe.counted && pipe.x + pipeWidth - anticipacion < player.x) {
+      score++;
+      pipe.counted = true;
+      rotating = true;
+      addParticles();
+      updateLevelProgress();
+      if (!muted) {
+        scoreSound.currentTime = 0;
+        scoreSound.play();
+      }
+    }
+
+    if (
+      player.x < pipe.x + pipeWidth &&
+      player.x + player.hitbox > pipe.x &&
+      (player.y < pipe.y || player.y + player.hitbox > pipe.y + pipeGap)
+    ) {
+      gameOver();
+    }
+  });
+
+  if (pipes[pipes.length - 1].x < canvas.width - pipeSpacing) {
+    pipes.push({ x: canvas.width, y: Math.floor(Math.random() * (canvas.height - pipeGap - 100)) + 50, counted: false });
+  }
+  if (pipes[0].x + pipeWidth < 0) {
+    pipes.shift();
+  }
+}
+
+function addParticles() {
+  const colors = ["#ff4444", "#44ff44", "#4444ff", "#ffff44", "#ff44ff", "#44ffff"];
+  for (let i = 0; i < 10; i++) {
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    particles.push({
+      x: player.x + player.hitbox / 2,
+      y: player.y + player.hitbox / 2,
+      dx: (Math.random() - 0.5) * 5,
+      dy: (Math.random() - 0.5) * 5,
+      size: Math.random() * 4 + 2,
+      life: 60,
+      color: color
+    });
+  }
+}
+
+function updateParticles() {
+  particles = particles.filter(p => {
+    p.x += p.dx;
+    p.y += p.dy;
+    p.life--;
+    return p.life > 0;
+  });
+
+  particles.forEach(p => {
+    ctx.fillStyle = p.color;
+    if (level === 3 || level === 5) {
+      ctx.font = `${p.size * 3}px Arial`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("⭐", p.x, p.y);
+    } else {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  });
+}
+
+function getNextQuestion() {
+  // Si no hay preguntas restantes, devolver null
+  if (remainingQuestions.length === 0) {
+    return null;
+  }
+  
+  // Devolver y remover la última pregunta del array
+  return remainingQuestions.pop();
+}
+
+function showQuestionCard() {
+  // Verificar si hay preguntas disponibles
+  if (remainingQuestions.length === 0) {
+    // No hay más preguntas, terminar el juego
+    showGameOver();
+    return;
+  }
+  
+  const q = getNextQuestion();
+  sampleQuestion.question = q.question;
+  sampleQuestion.answer = q.answer;
+
+  const card = document.getElementById("questionCard");
+  document.getElementById("questionText").textContent = q.question;
+  document.getElementById("answerInput").value = "";
+  card.style.display = "block";
+
+  // Forzar reinicio de animación
+  card.style.animation = "none";
+  void card.offsetWidth; // Trigger reflow
+  card.style.animation = "fadeInCard 0.5s ease-out forwards";
+  
+  // Enfocar el input para facilitar la escritura
+  setTimeout(() => {
+    document.getElementById("answerInput").focus();
+  }, 100);
+}
+
+function gameOver() {
+  if (gameEnded) return;
+  gameEnded = true;
+  if (!muted) hitSound.play();
+  bgMusic.pause();
+  // Verificar si hay preguntas disponibles
+  if (remainingQuestions.length === 0) {
+    // No hay más preguntas, terminar el juego
+    showGameOver();
+    return;
+  }
+  
+  // Mostrar pregunta de rescate SIN mostrar game over
+  showQuestionCard();
+}
+
+function checkAnswer() {
+  const userAnswer = document.getElementById("answerInput").value.toLowerCase().trim();
+  const correctAnswer = sampleQuestion.answer.toLowerCase().trim();
+  
+  if (userAnswer === correctAnswer) {
+    // Respuesta correcta - continuar el juego con countdown
+    document.getElementById("questionCard").style.display = "none";
+    continueGameWithCountdown();
+  } else {
+    // Respuesta incorrecta - mostrar game over
+    document.getElementById("questionCard").style.display = "none";
+    showGameOver();
+  }
+}
+
+function skipQuestion() {
+  // Saltar pregunta - mostrar game over directamente
+  document.getElementById("questionCard").style.display = "none";
+  showGameOver();
+}
+
+function continueGameWithCountdown() {
+  // Resetear posición del jugador
+  player.y = canvas.height / 2;
+  player.velocity = 0;
+  
+  // Limpiar tubos existentes y crear espacio
+  pipes = [];
+  
+  // Iniciar countdown de 3, 2, 1
+  let countdownValue = 3;
+  const countdownEl = document.getElementById("countdown");
+  countdownEl.style.display = "block";
+  countdownEl.textContent = countdownValue;
+
+  const countdownInterval = setInterval(() => {
+    countdownValue--;
+    if (countdownValue > 0) {
+      countdownEl.textContent = countdownValue;
+    } else {
+      clearInterval(countdownInterval);
+      countdownEl.style.display = "none";
+      
+      // Agregar el primer tubo con espacio seguro
+      pipes.push({ 
+        x: canvas.width - 700, // Más lejos para dar tiempo
+        y: Math.floor(Math.random() * (canvas.height - pipeGap - 100)) + 50, 
+        counted: false 
+      });
+      
+      // Reanudar el juego
+      gameEnded = false;
+      if (!muted) bgMusic.play();
+      gameLoop();
+    }
+  }, 1000);
+}
+function showGameOver() {
+  document.getElementById("finalScore").textContent = "Puntaje final: " + score;
+  document.getElementById("finalLevel").textContent = "Nivel alcanzado: " + levelNames[getLevel(score) - 1];
+  document.getElementById("gameOverScreen").style.display = "block";
+}
+
+// Permitir responder con Enter
+document.addEventListener("keydown", function(event) {
+  if (event.key === "Enter" && document.getElementById("questionCard").style.display === "block") {
+    checkAnswer();
+  }
+});
+
+function drawScore() {
+  ctx.fillStyle = "#fff";
+  ctx.strokeStyle = "#000";
+  ctx.lineWidth = 3;
+  ctx.font = "26px sans-serif";
+  ctx.textAlign = "left";
+  ctx.strokeText("Puntuación: " + score, 30, 60);
+  ctx.fillText("Puntuación: " + score, 30, 60);
+}
+
+function drawLevel() {
+  level = getLevel(score);
+  ctx.fillStyle = "#fff";
+  ctx.strokeStyle = "#000";
+  ctx.lineWidth = 3;
+  ctx.font = "20px sans-serif";
+  ctx.textAlign = "left";
+  ctx.strokeText("Nivel: " + levelNames[level - 1], 30, 90);
+  ctx.fillText("Nivel: " + levelNames[level - 1], 30, 90);
+}
+
+function gameLoop() {
+  if (!gameStarted || gameEnded) return;
+  
+  // Limpiar canvas
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  
+  // Dibujar fondo animado (va primero, detrás de todo)
+  drawAnimatedBackground();
+  drawClouds();
+  
+  // Dibujar elementos del juego (van encima del fondo)
+  updateParticles();
+
+  player.velocity += gravity;
+  player.y += player.velocity;
+
+  if (player.y + player.hitbox > canvas.height || player.y < 0) {
+    gameOver();
+    return;
+  }
+
+  drawPlayer();
+  drawPipes();
+  updatePipes();
+  drawScore();
+  drawLevel();
+
+  requestAnimationFrame(gameLoop);
+}
+
+startBtn.addEventListener("click", () => {
+  playerEmoji = document.getElementById("emojiSelect").value;
+  menu.style.display = "none";
+  document.getElementById("logoFondo").style.display = "none";
+  document.getElementById("subtituloMenu").style.display = "none";
+  document.getElementById("videoFondo").style.display = "none";
+
+  // Inicializar nubes
+  initClouds();
+
+  let countdownValue = 3;
+  const countdownEl = document.getElementById("countdown");
+  countdownEl.style.display = "block";
+  countdownEl.textContent = countdownValue;
+
+  const countdownInterval = setInterval(() => {
+    countdownValue--;
+    if (countdownValue > 0) {
+      countdownEl.textContent = countdownValue;
+    } else {
+      clearInterval(countdownInterval);
+      countdownEl.style.display = "none";
+      pipes.push({ x: canvas.width, y: Math.floor(Math.random() * (canvas.height - pipeGap - 100)) + 50, counted: false });
+      gameStarted = true;
+      if (!muted) bgMusic.play();
+      gameLoop();
+    }
+  }, 1000);
+});
+
+window.addEventListener("resize", () => {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  initClouds(); // Reinicializar nubes al cambiar tamaño
+});
+</script>
+</body>
+</html>
