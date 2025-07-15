@@ -244,8 +244,13 @@ let playerEmoji = "🦇";
 let sampleQuestion = { question: "", answer: "" };
 let playerName = "Jugador";
 let gameLoopId = null; // identificador del ciclo de animación
-let fechaInicio = null;
-let preguntasRespondidas = 0;  
+let nombreJugador = document.getElementById("nombre").value;
+let puntajeFinal = score; // tu variable de puntaje
+let preguntasCorrectas = preguntasRespondidas; // tu contador
+let fechaInicio = tiempoInicio; // formateado tipo ISO
+let fechaFin = new Date().toISOString(); // ahora
+
+guardarRegistro(nombreJugador, puntajeFinal, preguntasCorrectas, fechaInicio, fechaFin);  
 
 // Variables para el fondo animado
 let backgroundOffset = 0;
@@ -921,7 +926,7 @@ window.addEventListener("resize", () => {
   botonGuardar.disabled = true;
 
   // ⚠️ CAMBIAR ESTA URL POR LA DE TU SCRIPT IMPLEMENTADO
-  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwDOtEdxIhOlbNEU2ZdIjLSvFBTdsLbR3uXno60k6d-250Uxi50gtqs77uZMEsD-xRe/exec';
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxULZtNJ24dEF4sf2ED68vztXt0abcTTuQFTxRLst7rmPXkaTwPkDGeeLUeI0jOlh1aFQ/exec';
   
   console.log('Enviando datos:', datos);
   console.log('URL del script:', SCRIPT_URL);
