@@ -914,20 +914,42 @@ window.addEventListener("resize", () => {
     fechaFin: fechaFin
   };
 
+    // Mostrar indicador de carga
+  const botonGuardar = document.querySelector('button[onclick="guardarRegistro()"]');
+  const textoOriginal = botonGuardar.textContent;
+  botonGuardar.textContent = 'Guardando...';
+  botonGuardar.disabled = true;
+
   fetch('https://script.google.com/macros/s/AKfycbwDOtEdxIhOlbNEU2ZdIjLSvFBTdsLbR3uXno60k6d-250Uxi50gtqs77uZMEsD-xRe/exec', {
     method: "POST",
+    mode: 'cors',
     body: JSON.stringify(datos),
     headers: {
       "Content-Type": "application/json"
     }
   })
-  .then(response => response.text())
-  .then(res => {
-    alert("✅ Registro guardado con éxito.");
+  .then(response => {
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return response.json();
+  })
+  .then(data => {
+    if (data.success) {
+      alert("✅ Registro guardado con éxito!");
+      console.log('Datos guardados:', data);
+    } else {
+      throw new Error(data.error || 'Error desconocido');
+    }
   })
   .catch(error => {
-    alert("❌ Error al guardar el registro.");
-    console.error(error);
+    console.error('Error detallado:', error);
+    alert("❌ Error al guardar el registro: " + error.message);
+  })
+  .finally(() => {
+    // Restaurar botón
+    botonGuardar.textContent = textoOriginal;
+    botonGuardar.disabled = false;
   });
 }
 </script>
