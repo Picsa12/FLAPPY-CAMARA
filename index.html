@@ -244,6 +244,8 @@ let playerEmoji = "🦇";
 let sampleQuestion = { question: "", answer: "" };
 let playerName = "Jugador";
 let gameLoopId = null; // identificador del ciclo de animación
+let fechaInicio = null;
+let preguntasRespondidas = 0;  
 
 // Variables para el fondo animado
 let backgroundOffset = 0;
@@ -731,6 +733,7 @@ function checkAnswer() {
   const correctAnswer = sampleQuestion.answer.toLowerCase().trim();
   
   if (userAnswer === correctAnswer) {
+    preguntasRespondidas++;
     // Respuesta correcta - continuar el juego con countdown
     document.getElementById("questionCard").style.display = "none";
     continueGameWithCountdown();
@@ -869,6 +872,7 @@ startBtn.addEventListener("click", () => {
 
   // Inicializar nubes
   initClouds();
+  fechaInicio = new Date().toISOString();
 
   let countdownValue = 3;
   const countdownEl = document.getElementById("countdown");
@@ -900,6 +904,32 @@ window.addEventListener("resize", () => {
   canvas.height = window.innerHeight;
   initClouds(); // Reinicializar nubes al cambiar tamaño
 });
+  function guardarRegistro() {
+  const fechaFin = new Date().toISOString();
+  const datos = {
+    nombre: playerName,
+    puntaje: score,
+    preguntas: preguntasRespondidas,
+    fechaInicio: fechaInicio,
+    fechaFin: fechaFin
+  };
+
+  fetch('https://script.google.com/macros/s/AKfycbwDOtEdxIhOlbNEU2ZdIjLSvFBTdsLbR3uXno60k6d-250Uxi50gtqs77uZMEsD-xRe/exec', {
+    method: "POST",
+    body: JSON.stringify(datos),
+    headers: {
+      "Content-Type": "application/json"
+    }
+  })
+  .then(response => response.text())
+  .then(res => {
+    alert("✅ Registro guardado con éxito.");
+  })
+  .catch(error => {
+    alert("❌ Error al guardar el registro.");
+    console.error(error);
+  });
+}
 </script>
 </body>
 </html>
