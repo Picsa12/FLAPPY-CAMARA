@@ -17,30 +17,33 @@
     }
     canvas {
       display: block;
-      margin: 0;
-      padding: 0;
+      width: 100vw;
+      height: 100vh;
       box-shadow: 0 0 20px #000;
     }
-    #menu, #gameOverScreen {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(0, 0, 0, 0.8);
-      border-radius: 20px;
-      padding: 40px 60px;
-      text-align: center;
-      box-shadow: 0 0 30px #000;
-      color: white;
-      z-index: 20;
-    }
+#menu, #gameOverScreen {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.8);
+  border-radius: 20px;
+  padding: 5vw;
+  text-align: center;
+  box-shadow: 0 0 30px #000;
+  color: white;
+  z-index: 20;
+  width: 80vw;
+  max-width: 400px;
+}
+
     #menu h1 {
       margin: 0 0 20px;
-      font-size: 36px;
+      font-size: 8vw;
     }
     #startGame {
       padding: 10px 30px;
-      font-size: 20px;
+      font-size: 3vw;
       border: none;
       border-radius: 12px;
       background: #ffcc00;
@@ -88,16 +91,137 @@
     }
 
 #questionCard {
-  z-index: 100; /* Asegurar que esté por encima del canvas */
-  animation: fadeInCard 0.5s ease-out forwards;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.8);
+  background: white;
+  border-radius: 25px;
+  padding: 5vw;
+  text-align: center;
+  color: #333;
+  z-index: 100;
+  width: 80vw;
+  max-width: 400px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 10px 20px rgba(0, 0, 0, 0.2);
+  border: 3px solid #f0f0f0;
   opacity: 0;
-  transform: scale(0.8) translate(-50%, -50%);
+  animation: fadeInCard 0.6s ease-out forwards;
+}
+
+#questionCard h3 {
+  font-size: 24px;
+  margin-bottom: 25px;
+  color: #2c3e50;
+}
+
+#questionCard p {
+  font-size: 20px;
+  margin: 20px 0;
+  color: #34495e;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+#answerInput {
+  width: 90%;
+  padding: 15px;
+  margin: 20px 0;
+  border: 2px solid #ddd;
+  border-radius: 12px;
+  font-size: 16px;
+  box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
+  transition: border-color 0.3s;
+}
+
+#questionCard button {
+  padding: 15px 30px;
+  margin: 10px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  transition: all 0.3s;
+}
+
+#questionCard button:first-child {
+  background: #4CAF50;
+  color: white;
+  box-shadow: 0 4px 10px rgba(76, 175, 80, 0.3);
+}
+
+#questionCard button:last-child {
+  background: #f44336;
+  color: white;
+  box-shadow: 0 4px 10px rgba(244, 67, 54, 0.3);
+}
+    
+#playerNameInput {
+  font-size: 3vw;
+  text-align: center;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: none;
+  margin: 10px 0;
+}
+    
+#subtituloMenu {
+  font-size: 4vw;
+  text-align: center;
+  margin: 20px 0;
+  color: #333;
+  margin-top: -50px;
 }
 
 @keyframes fadeInCard {
   to {
     opacity: 1;
     transform: scale(1) translate(-50%, -50%);
+  }
+}
+    @media (min-width: 500px) {
+  #menu h1 {
+    font-size: 36px;
+  }
+
+  #startGame {
+    font-size: 20px;
+  }
+  #menu, #gameOverScreen {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.8);
+      border-radius: 20px;
+      padding: 40px 60px;
+      text-align: center;
+      box-shadow: 0 0 30px #000;
+      color: white;
+      z-index: 20;
+     }
+  #playerNameInput {
+    font-size: 18px;
+   }        
+  #subtituloMenu {
+    font-size: 25px;
+    margin-top: -20px;
+   }
+  #questionCard {
+    transform: translate(-50%, -50%) scale(1);
+    min-width: 500px;
+    padding: 50px 40px;
+  }
+
+  #questionCard h3 {
+    font-size: 28px;
+  }
+
+  #questionCard p,
+  #answerInput,
+  #questionCard button {
+    font-size: 18px;
   }
 }
 
@@ -128,17 +252,17 @@
     <option value="⚽">⚽ Soccer</option>
   </select><br/>
     <label for="playerNameInput">Ingresa tu nombre:</label><br/>
-    <input id="playerNameInput" type="text" placeholder="Jugador" style="font-size: 20px; padding: 8px 12px; border-radius: 10px; border: none; margin: 10px 0;"><br/>
+    <input id="playerNameInput" type="text" placeholder="Jugador"><br/>
   <button id="startGame">Iniciar Juego</button>
 </div>
 <div id="subtituloMenu">Desarrollo Estratégico</div>
-<div id="questionCard" style="display:none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border-radius: 25px; padding: 50px 40px; text-align: center; color: #333; z-index: 30; max-width: 600px; min-width: 500px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 10px 20px rgba(0, 0, 0, 0.2); border: 3px solid #f0f0f0;">
-  <h3 style="font-size: 28px; margin: 0 0 25px 0; color: #2c3e50;">🤔 Pregunta de Rescate</h3>
-  <p id="questionText" style="font-size: 22px; margin: 20px 0; color: #34495e; font-weight: 500; line-height: 1.4;"></p>
-  <input type="text" id="answerInput" placeholder="Escribe tu respuesta..." style="width: 90%; padding: 15px; margin: 20px 0; border: 2px solid #ddd; border-radius: 12px; font-size: 18px; box-shadow: inset 0 2px 5px rgba(0,0,0,0.1); transition: border-color 0.3s;">
-  <div style="margin-top: 30px;">
-    <button onclick="checkAnswer()" style="padding: 15px 30px; margin: 10px; background: #4CAF50; color: white; border: none; border-radius: 12px; cursor: pointer; font-size: 18px; font-weight: bold; box-shadow: 0 4px 10px rgba(76, 175, 80, 0.3); transition: all 0.3s;">Responder</button>
-    <button onclick="skipQuestion()" style="padding: 15px 30px; margin: 10px; background: #f44336; color: white; border: none; border-radius: 12px; cursor: pointer; font-size: 18px; font-weight: bold; box-shadow: 0 4px 10px rgba(244, 67, 54, 0.3); transition: all 0.3s;">Saltar</button>
+<div id="questionCard" style="display:none;">
+  <h3>🤔 Pregunta de Rescate</h3>
+  <p id="questionText"></p>
+  <input type="text" id="answerInput" placeholder="Escribe tu respuesta...">
+  <div>
+    <button onclick="checkAnswer()">Responder</button>
+    <button onclick="skipQuestion()">Saltar</button>
   </div>
 </div>
 <div id="gameOverScreen" style="display:none;">
