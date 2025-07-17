@@ -56,16 +56,18 @@
       background: #ffdd33;
     }
     #logoFondo {
-      position: absolute;
-      top: 75px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 60vw;
-      opacity: 1;
-      z-index: 100;
-      pointer-events: none;
-      filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.5));
-    }
+  position: absolute;
+  top: 75px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 50vw;              /* Escala con el ancho de la pantalla */
+  max-width: 400px;         /* No supera los 400px en pantallas grandes */
+  opacity: 1;
+  z-index: 100;
+  pointer-events: none;
+  filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.5));
+}
+
     #subtituloMenu {
       position: absolute;
       top: calc(50% + 200px);
@@ -202,7 +204,7 @@
       z-index: 20;
      }
   #playerNameInput {
-    font-size: 18px;
+    font-size: 16px;
    }        
   #subtituloMenu {
     font-size: 25px;
@@ -222,9 +224,6 @@
   #answerInput,
   #questionCard button {
     font-size: 18px;
-  }
-  #logoFondo {
-    width: 400px;
   }
 }
 
@@ -255,7 +254,7 @@
     <option value="⚽">⚽ Soccer</option>
   </select><br/>
     <label for="playerNameInput">Ingresa tu nombre:</label><br/>
-    <input id="playerNameInput" type="text" placeholder="Jugador"><br/>
+    <input id="playerNameInput" type="text" placeholder="Ej: Juan Perez"><br/>
   <button id="startGame">Iniciar Juego</button>
 </div>
 <div id="subtituloMenu">Desarrollo Estratégico</div>
@@ -1079,6 +1078,30 @@ function guardarRegistro() {
       botonGuardar.disabled = false;
     });
 }
+  function capitalizeName(name) {
+  return name
+    .toLowerCase()
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
+const nameInput = document.getElementById('playerNameInput');
+
+nameInput.addEventListener('input', () => {
+  let formatted = capitalizeName(nameInput.value);
+  nameInput.value = formatted;
+});
+
+</script>
+  <script>
+  const canvas = document.querySelector("canvas");
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  window.addEventListener("resize", resizeCanvas);
+  resizeCanvas();
 </script>
 </body>
 </html>
