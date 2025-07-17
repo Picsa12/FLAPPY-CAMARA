@@ -254,7 +254,7 @@
     <option value="⚽">⚽ Soccer</option>
   </select><br/>
     <label for="playerNameInput">Ingresa tu nombre:</label><br/>
-    <input id="playerNameInput" type="text" placeholder="Ej: Juan Perez"><br/>
+    <input id="playerNameInput" type="text" placeholder="Jugador"><br/>
   <button id="startGame">Iniciar Juego</button>
 </div>
 <div id="subtituloMenu">Desarrollo Estratégico</div>
@@ -1049,7 +1049,7 @@ function guardarRegistro() {
 
   // ✅ Usa GET y convierte los datos en parámetros de URL
   const queryParams = new URLSearchParams(datos).toString();
-  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby0t9ugyEBNDJtv7suhYsfF3RXXDW-7_sLm_jqhPXXlf543qvB23rMylsZ5MkOyF-BqDw/exec';
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyxHQJiiOT84xbx8NLy4-ac2Z_4dKmcUS1G_Od5YtVn9_3YnaNCIfmveTz15na96qR6/exec';
   const FULL_URL = `${SCRIPT_URL}?${queryParams}`;
 
   console.log('Enviando a URL:', FULL_URL);
